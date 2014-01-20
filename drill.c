@@ -60,12 +60,12 @@ size_t parse_hole_size(char *optarg)
 
 int dig_hole(int fd, off_t offset, off_t length)
 {
-	int r = fallocate(fd, FALLOC_FL_PUNCH_HOLE|FALLOC_FL_KEEP_SIZE,
+	int err = fallocate(fd, FALLOC_FL_PUNCH_HOLE|FALLOC_FL_KEEP_SIZE,
 	                  offset, length);
-	if (r == -1)
+	if (err)
 		perror("fallocate failed");
 
-	return r;
+	return err;
 }
 
 /*
