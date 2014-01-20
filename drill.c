@@ -164,6 +164,11 @@ int main(int argc, char **argv)
 
 	int ret = drill(fd, hole_size);
 
-	close(fd);
+	int err = close(fd);
+	if (err) {
+		perror("write failed");
+		ret = 1;
+	}
+
 	return ret;
 }
