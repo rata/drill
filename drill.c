@@ -4,6 +4,7 @@
 #include <sys/stat.h>           /* open() */
 #include <stdio.h>              /* printf(), perror() */
 #include <stdlib.h>             /* strtoul(), malloc() and friends */
+#include <sys/mman.h>           /* mmap() */
 #include <unistd.h>             /* lseek(), pread(), getopt(), sleep() */
 #include <sys/types.h>          /* lseek() */
 #include <string.h>             /* memcmp() */
@@ -12,7 +13,6 @@
 /*
  *  TODO:
  *      Add tests
- *      Use mmap ?
  */
 
 void usage(void)
@@ -75,11 +75,16 @@ int dig_hole(int fd, off_t offset, off_t length)
 int drill(int fd, size_t hole_size)
 {
 	int ret = 0;
+	int err;
 
 	/* Create a buffer of '\0's to compare against */
-	void *zeros = calloc(1, hole_size);
-	if (zeros == NULL)
+	/* XXX: Use mmap() with MAP_PRIVATE so Linux can avoid this allocation */
+	void *zeros = mmap(NULL, hole_size, PROT_READ,
+	                   MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	if (zeros == MAP_FAILED) {
+		perror("mmap failed");
 		return 1;
+	}
 
 	/* buffer to read the file */
 	ssize_t buf_len = hole_size;
@@ -116,7 +121,11 @@ int drill(int fd, size_t hole_size)
 			goto out;
 	}
 out:
-	free(zeros);
+	err = munmap(zeros, hole_size);
+	if (err == -1) {
+		perror("munmap failed");
+		ret = 1;
+	}
 	free(buf);
 	return ret;
 }
@@ -149,8 +158,7 @@ int main(int argc, char **argv)
 	}
 
 	if (hole_size >= 100 * 1024 * 1024) {
-		/* We allocate two buffers of size hole_size */
-		size_t ram_mb = 2 * hole_size / 1024 / 1024;
+		size_t ram_mb = hole_size / 1024 / 1024;
 		printf("WARNING: %zu MB RAM will be used\n", ram_mb);
 		sleep(3);
 	}
