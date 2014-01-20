@@ -2,6 +2,9 @@
 CFLAGS += -Wall -Wstrict-prototypes -O3
 ALL_CFLAGS += $(CFLAGS) -std=c99 -pedantic
 
+# LFS support (LFS_LDFLAGS are not needed on Linux)
+ALL_CFLAGS += $(shell getconf LFS_CFLAGS 2>/dev/null)
+
 # This is needed for fallocate() and pread()
 ALL_CFLAGS += -D_GNU_SOURCE
 
