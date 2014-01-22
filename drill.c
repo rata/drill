@@ -122,7 +122,7 @@ int drill(int fd, size_t hole_size)
 	}
 out:
 	err = munmap(zeros, hole_size);
-	if (err == -1) {
+	if (err) {
 		perror("munmap failed");
 		ret = 1;
 	}
