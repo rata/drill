@@ -1,5 +1,11 @@
 drill: Make a file sparse without using extra disk space
 --------------------------------------------------------
+
+**NOTE**: a patch was submitted and merged into util-linux > 2.24 adding this
+functionality as part of the fallocate command. You should probably use that,
+although if util-linux > 2.24 is not present on your platform and want to avoid
+compiling util-linux, you can still find this useful.
+
 ::
 
         drill [options] <filename>
